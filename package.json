@@ -30,6 +30,9 @@
     "lodash.isplainobject": "^3.2.0",
     "normalizr": "^1.0.0"
   },
+  "peerDependencies": {
+    "normalizr": "^1.0.0"
+  },
   "devDependencies": {
     "babel": "^5.8.21",
     "babel-istanbul": "^0.3.17",
