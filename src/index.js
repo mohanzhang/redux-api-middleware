@@ -48,7 +48,13 @@ function callApi(endpoint, method, headers, body, schema) {
         return Promise.reject(new Error(`${response.status} - ${response.statusText}`));
       }
     })
-    .then(response => response.json())
+    .then((response) => {
+      if (response.status === 204) {
+        return Promise.resolve({});
+      } else {
+        return response.json();
+      }
+    })
     .then((json) => {
       if (schema) {
         return Promise.resolve(normalize(json, schema));

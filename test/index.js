@@ -180,6 +180,45 @@ test('apiMiddleware must handle a successful API request', function (t) {
   actionHandler(anAction);
 });
 
+test('apiMiddleware must handle a successful API request that returns an empty body', function (t) {
+  const api = nock('http://127.0.0.1')
+                .delete('/api/users/1')
+                .reply(204);
+  const anAction = {
+    [CALL_API]: {
+      endpoint: 'http://127.0.0.1/api/users/1',
+      method: 'DELETE',
+      types: ['DELETE_USER.REQUEST', 'DELETE_USER.SUCCESS', 'DELETE_USER.FAILURE']
+    },
+    payload: { someKey: 'someValue' },
+    meta: 'meta'
+  };
+  const doGetState = () => {};
+  const nextHandler = apiMiddleware({ getState: doGetState });
+  const doNext = (action) => {
+    switch (action.type) {
+    case 'DELETE_USER.REQUEST':
+      t.pass('request FSA passed to the next handler');
+      t.equal(typeof action[CALL_API], 'undefined', 'request FSA does not have a [CALL_API] property')
+      t.deepEqual(action.payload, anAction.payload, 'request FSA has correct payload property');
+      t.deepEqual(action.meta, anAction.meta, 'request FSA has correct meta property');
+      t.notOk(action.error, 'request FSA has correct error property');
+      break;
+    case 'DELETE_USER.SUCCESS':
+      t.pass('success FSA action passed to the next handler');
+      t.equal(typeof action[CALL_API], 'undefined', 'success FSA does not have a [CALL_API] property')
+      t.deepEqual(action.payload, anAction.payload, 'success FSA has correct payload property');
+      t.deepEqual(action.meta, anAction.meta, 'success FSA has correct meta property');
+      t.notOk(action.error, 'success FSA has correct error property');
+      break;
+    }
+  };
+  const actionHandler = nextHandler(doNext);
+
+  t.plan(10);
+  actionHandler(anAction);
+});
+
 test('apiMiddleware must handle an unsuccessful API request', function (t) {
   const api = nock('http://127.0.0.1')
                 .get('/api/users/1')
